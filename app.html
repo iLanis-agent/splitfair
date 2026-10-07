@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SplitFair app</title><style>
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:#10151c;color:#e8eef5}main{max-width:760px;margin:0 auto;padding:20px}h1{margin:0 0 4px}.m{color:#a9b8c8}table{width:100%;border-collapse:collapse;margin:14px 0}th,td{padding:6px 4px;text-align:left}input{width:100%;padding:9px;border-radius:8px;border:1px solid #33414f;background:#18202a;color:#e8eef5;font:inherit}td input[type=number]{max-width:90px}button{background:#6fd0b0;color:#10151c;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;margin-right:8px}button.s{background:#27323f;color:#e8eef5}.err{color:#ff8a8a;min-height:1.5em}.card{background:#18202a;border-radius:12px;padding:14px;margin:12px 0}.pa{color:#6fd0b0}.pb{color:#f2b66d}.bar{height:12px;border-radius:6px;background:#27323f;overflow:hidden;display:flex}.bar i{display:block;height:100%}.pt{color:#a9b8c8;font-size:.9rem}@media(max-width:520px){td input[type=number]{max-width:62px}}
+</style></head><body><main><h1>SplitFair</h1><p class="m">Each person spreads points over the items (any scale; each column is rescaled to 100). Keep your column private until you both finish.</p>
+<table><thead><tr><th>Item</th><th class="pa">Person A</th><th class="pb">Person B</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+<button id="add" class="s">Add item</button><button id="go">Split fairly</button><button id="ex" class="s">Example</button><div class="err" id="err" role="alert"></div><div id="out"></div></main>
+<script src="engine.js"></script><script>
+var rows=document.getElementById('rows');
+function addRow(n,a,b){var tr=document.createElement('tr');tr.innerHTML='<td><input class="n" placeholder="Item" aria-label="Item name"></td><td><input class="a" type="number" min="0" aria-label="A points"></td><td><input class="b" type="number" min="0" aria-label="B points"></td><td><button class="s x" aria-label="Remove">x</button></td>';
+tr.querySelector('.n').value=n||'';tr.querySelector('.a').value=a==null?'':a;tr.querySelector('.b').value=b==null?'':b;tr.querySelector('.x').onclick=function(){tr.remove()};rows.appendChild(tr)}
+function ex(){rows.innerHTML='';[['House',60,70],['Car',25,5],['Boat',15,25]].forEach(function(r){addRow(r[0],r[1],r[2])});}
+document.getElementById('add').onclick=function(){addRow()};document.getElementById('ex').onclick=function(){ex();go()};
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function f(x){return (Math.round(x*10)/10).toFixed(1)}
+function go(){var items=[].map.call(rows.children,function(tr){return{name:tr.querySelector('.n').value.trim(),a:Number(tr.querySelector('.a').value||0),b:Number(tr.querySelector('.b').value||0)}});
+var r=SplitFair.adjustedWinner(items),e=document.getElementById('err'),o=document.getElementById('out');e.textContent='';o.innerHTML='';if(r.error){e.textContent=r.error;return}
+var h='<div class="card"><b>Both get '+f(r.pa)+' of 100 points</b> by their own scoring.<div class="bar"><i style="width:50%;background:#6fd0b0"></i><i style="width:50%;background:#f2b66d"></i></div></div>';
+r.shares.forEach(function(s){var pa=Math.round(s.fa*1000)/10,pb=Math.round(s.fb*1000)/10;var t=(pa>0&&pb>0)?'<span class="pa">A '+pa+'%</span> / <span class="pb">B '+pb+'%</span> (split: sell and share, or one pays the other)':(pa>0?'<span class="pa">Person A</span>':'<span class="pb">Person B</span>');
+h+='<div class="card"><b>'+esc(s.name)+'</b><br>'+t+'<div class="pt">A values it '+f(s.a)+', B values it '+f(s.b)+'</div></div>'});
+o.innerHTML=h}
+ex();go();
+</script></body></html>
